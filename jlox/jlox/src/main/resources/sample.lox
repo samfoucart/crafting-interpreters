@@ -1,0 +1,12 @@
+var hello = 5;
+if (hello < 100) {
+    print "wahoo";
+}
+
+while (hello > 0) {
+    if (hello > 2) {
+        print "greater than two";
+    } else {
+        print "not greater than two";
+    }
+}
