@@ -4,11 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class AstPrinterTest {
+public class InterpreterTest {
     @Test
-    public void bookSampleShouldPrint() {
-        String expected = "(* (- 123) (group 45.67))";
-
+    public void bookSampleShouldInterpret() {
         // arrange
         Expr expression = new Expr.Binary(
             new Expr.Unary(
@@ -20,9 +18,10 @@ public class AstPrinterTest {
         );
 
         // act
-        String actual = new AstPrinter().print(expression);
+        Interpreter interpreter = new Interpreter();
+        Object result = interpreter.evaluate(expression);
 
         // assert
-        assertEquals(expected, actual);
+        assertEquals(-5617.41, (double) result);
     }
 }

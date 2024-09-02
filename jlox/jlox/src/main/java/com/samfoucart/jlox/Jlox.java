@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Jlox {
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -34,6 +36,11 @@ public class Jlox {
         }
     }
 
+    public static void runtimeError(JloxRuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.getToken().line + "]");
+        hadRuntimeError = true;
+    }
+
     private static void report(int line, String where, String message) {
         System.err.println(
                 "[line " + line + "] Error" + where + ": " + message
@@ -49,6 +56,10 @@ public class Jlox {
         // Indicate an error in the exit code
         if (hadError) {
             System.exit(65);
+        }
+
+        if (hadRuntimeError) {
+            System.exit(75);
         }
     }
 
@@ -87,6 +98,8 @@ public class Jlox {
             return;
         }
 
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
+
+        // System.out.println(new AstPrinter().print(expression));
     }
 }
