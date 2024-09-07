@@ -1,16 +1,21 @@
 package com.samfoucart.jlox;
 
+import java.util.List;
+
 import com.samfoucart.jlox.Expr.Binary;
 import com.samfoucart.jlox.Expr.Grouping;
 import com.samfoucart.jlox.Expr.Literal;
 import com.samfoucart.jlox.Expr.Unary;
+import com.samfoucart.jlox.Stmt.Expression;
+import com.samfoucart.jlox.Stmt.Print;
 
-public class Interpreter implements Expr.Visitor<Object> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    public void interpret(Expr expr) {
+    public void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expr);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                evaluate(statement);
+            }
         } catch (JloxRuntimeError error) {
             Jlox.runtimeError(error);
         }
@@ -18,6 +23,10 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     public Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    public Void evaluate(Stmt stmt) {
+        return stmt.accept(this);
     }
 
     @Override
@@ -160,5 +169,18 @@ public class Interpreter implements Expr.Visitor<Object> {
         }
 
         return value.toString();
+    }
+
+    @Override
+    public Void visitExpressionStmt(Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 }

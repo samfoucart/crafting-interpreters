@@ -92,13 +92,14 @@ public class Jlox {
         }
 
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        // Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (hadError) {
             return;
         }
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
 
         // System.out.println(new AstPrinter().print(expression));
     }

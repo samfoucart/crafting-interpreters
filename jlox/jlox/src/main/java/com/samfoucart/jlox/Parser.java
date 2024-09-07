@@ -1,5 +1,6 @@
 package com.samfoucart.jlox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
@@ -15,16 +16,29 @@ public class Parser {
     private int current;
 
     public Parser(List<Token> tokens) {
-        this.tokens = tokens;
+        if (tokens.size() == 0) {
+            List<Token> emptyList = new ArrayList<Token>();
+            emptyList.add(new Token(TokenType.EOF, "\0", null, 0));
+            this.tokens = emptyList;
+        } else {
+            this.tokens = tokens;
+        }
+        
         current = 0;
     }
 
-    public @Nullable Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    public List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            try {
+                statements.add(statement());
+            } catch (ParseError error) {
+                // System.out.println("attempt to synchronize");
+                synchronize();
+            }
         }
+
+        return statements;
     }
 
     private boolean isAtEnd() {
@@ -66,6 +80,28 @@ public class Parser {
         }
 
         return previous();
+    }
+
+    private Stmt statement() {
+        if (match(TokenType.PRINT)) {
+            return printStatement();
+        }
+
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        Expr expr = expression();
+        Stmt stmt = new Stmt.Print(expr);
+        consume(TokenType.SEMICOLON, "Expected ';' after print statement");
+        return stmt;
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        Stmt stmt = new Stmt.Expression(expr);
+        consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
+        return stmt;
     }
 
     private Expr expression() {
