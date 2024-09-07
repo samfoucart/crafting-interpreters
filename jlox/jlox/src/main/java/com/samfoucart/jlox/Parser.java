@@ -31,7 +31,7 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
             try {
-                statements.add(statement());
+                statements.add(declaration());
             } catch (ParseError error) {
                 // System.out.println("attempt to synchronize");
                 synchronize();
@@ -82,6 +82,15 @@ public class Parser {
         return previous();
     }
 
+    // Recursive Descent - Statements
+    private Stmt declaration() {
+        if (match(TokenType.VAR)) {
+            return varDeclaration();
+        }
+
+        return statement();
+    }
+
     private Stmt statement() {
         if (match(TokenType.PRINT)) {
             return printStatement();
@@ -103,6 +112,19 @@ public class Parser {
         consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
         return stmt;
     }
+
+    private Stmt varDeclaration() {
+        Token name = consume(TokenType.IDENTIFIER, "Expected IDENTIFIER after token 'var'");
+        Expr initializer = null;
+        if (match(TokenType.EQUAL)) {
+            initializer = expression();
+        }
+        consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
+
+        return new Stmt.Var(name, initializer);
+    }
+
+    // Recursive Descent - Expressions
 
     private Expr expression() {
         return equality();
@@ -187,6 +209,10 @@ public class Parser {
             Expr expr = expression();
             consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
+        }
+
+        if (match(TokenType.IDENTIFIER)) {
+            return new Expr.Variable(previous());
         }
 
         throw error(peek(), "Expect expression.");

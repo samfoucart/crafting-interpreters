@@ -6,27 +6,58 @@ import com.samfoucart.jlox.Expr.Binary;
 import com.samfoucart.jlox.Expr.Grouping;
 import com.samfoucart.jlox.Expr.Literal;
 import com.samfoucart.jlox.Expr.Unary;
+import com.samfoucart.jlox.Expr.Variable;
 import com.samfoucart.jlox.Stmt.Expression;
 import com.samfoucart.jlox.Stmt.Print;
+import com.samfoucart.jlox.Stmt.Var;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment globalEnvironment = new Environment();
 
     public void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
-                evaluate(statement);
+                execute(statement);
             }
         } catch (JloxRuntimeError error) {
             Jlox.runtimeError(error);
         }
     }
 
-    public Object evaluate(Expr expr) {
-        return expr.accept(this);
+    // Public Statement methods
+
+    public Void execute(Stmt stmt) {
+        return stmt.accept(this);
     }
 
-    public Void evaluate(Stmt stmt) {
-        return stmt.accept(this);
+    @Override
+    public Void visitExpressionStmt(Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Var stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+
+        globalEnvironment.put(stmt.name.lexeme, value);
+        return null;
+    }
+
+    // Public Expression statements
+
+    public Object evaluate(Expr expr) {
+        return expr.accept(this);
     }
 
     @Override
@@ -114,6 +145,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         // This should never happen unless there is a bug in the scanner or parser
         throw new JloxRuntimeError(expr.operator, "Unreachable statement");
     }
+
+    @Override
+    public Object visitVariableExpr(Variable expr) {
+        Object value = globalEnvironment.getValue(expr.name.lexeme);
+        if (value == null) {
+            return "nil";
+        }
+
+        return value;
+    }
     
     private boolean isEqual(Object left, Object right) {
         if (left == null && right == null) {
@@ -169,18 +210,5 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         return value.toString();
-    }
-
-    @Override
-    public Void visitExpressionStmt(Expression stmt) {
-        evaluate(stmt.expression);
-        return null;
-    }
-
-    @Override
-    public Void visitPrintStmt(Print stmt) {
-        Object value = evaluate(stmt.expression);
-        System.out.println(stringify(value));
-        return null;
     }
 }
