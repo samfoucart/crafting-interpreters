@@ -80,6 +80,7 @@ public class Parser {
     // Recursive Descent - Statements
     private Stmt declaration() {
         try {
+            // System.out.println("hello sam");
             if (match(TokenType.VAR)) {
                 return varDeclaration();
             }
@@ -107,9 +108,9 @@ public class Parser {
             return printStatement();
         }
 
-        // if (match(TokenType.LEFT_BRACE)) {
-        //     List<St
-        // }
+        if (match(TokenType.LEFT_BRACE)) {
+            return new Stmt.Block(blockStatement());
+        }
 
         return expressionStatement();
     }
@@ -126,6 +127,17 @@ public class Parser {
         Stmt stmt = new Stmt.Expression(expr);
         consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
         return stmt;
+    }
+
+    private List<Stmt> blockStatement() {
+        List<Stmt> declarations = new ArrayList<>();
+
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            declarations.add(declaration());
+        }
+
+        consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+        return declarations;
     }
 
     // Recursive Descent - Expressions

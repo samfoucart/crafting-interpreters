@@ -8,6 +8,7 @@ import com.samfoucart.jlox.Expr.Grouping;
 import com.samfoucart.jlox.Expr.Literal;
 import com.samfoucart.jlox.Expr.Unary;
 import com.samfoucart.jlox.Expr.Variable;
+import com.samfoucart.jlox.Stmt.Block;
 import com.samfoucart.jlox.Stmt.Expression;
 import com.samfoucart.jlox.Stmt.Print;
 import com.samfoucart.jlox.Stmt.Var;
@@ -53,6 +54,25 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         globalEnvironment.define(stmt.name.lexeme, value);
         return null;
+    }
+
+    @Override
+    public Void visitBlockStmt(Block stmt) {
+        executeBlock(stmt.statements, new Environment(globalEnvironment));
+        return null;
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.globalEnvironment;
+        try {
+            this.globalEnvironment = environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.globalEnvironment = previous;
+        }
     }
 
     // Public Expression statements
