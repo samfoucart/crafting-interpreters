@@ -2,6 +2,7 @@ package com.samfoucart.jlox;
 
 import java.util.List;
 
+import com.samfoucart.jlox.Expr.Assign;
 import com.samfoucart.jlox.Expr.Binary;
 import com.samfoucart.jlox.Expr.Grouping;
 import com.samfoucart.jlox.Expr.Literal;
@@ -58,6 +59,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     public Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    @Override
+    public Object visitAssignExpr(Assign expr) {
+        Object value = evaluate(expr.value);
+        globalEnvironment.assign(expr.name, value);
+        return value;
     }
 
     @Override

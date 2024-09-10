@@ -91,6 +91,17 @@ public class Parser {
         }
     }
 
+    private Stmt varDeclaration() {
+        Token name = consume(TokenType.IDENTIFIER, "Expected IDENTIFIER after token 'var'");
+        Expr initializer = null;
+        if (match(TokenType.EQUAL)) {
+            initializer = expression();
+        }
+        consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
+
+        return new Stmt.Var(name, initializer);
+    }
+
     private Stmt statement() {
         if (match(TokenType.PRINT)) {
             return printStatement();
@@ -113,21 +124,28 @@ public class Parser {
         return stmt;
     }
 
-    private Stmt varDeclaration() {
-        Token name = consume(TokenType.IDENTIFIER, "Expected IDENTIFIER after token 'var'");
-        Expr initializer = null;
-        if (match(TokenType.EQUAL)) {
-            initializer = expression();
-        }
-        consume(TokenType.SEMICOLON, "Expected ';' after expression statement");
-
-        return new Stmt.Var(name, initializer);
-    }
-
     // Recursive Descent - Expressions
 
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() {
+        Expr expr = equality();
+
+        if (match(TokenType.EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
+
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     private Expr equality() {
