@@ -50,7 +50,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             value = evaluate(stmt.initializer);
         }
 
-        globalEnvironment.put(stmt.name.lexeme, value);
+        globalEnvironment.define(stmt.name.lexeme, value);
         return null;
     }
 
@@ -148,12 +148,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Variable expr) {
-        Object value = globalEnvironment.getValue(expr.name.lexeme);
-        if (value == null) {
-            return "nil";
-        }
-
-        return value;
+        return globalEnvironment.getValue(expr.name);
     }
     
     private boolean isEqual(Object left, Object right) {

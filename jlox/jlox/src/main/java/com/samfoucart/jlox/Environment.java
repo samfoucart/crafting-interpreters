@@ -9,27 +9,27 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class Environment {
     private final @Nullable Environment previous;
-    private final Map<String, @Nullable Object> state;
+    private final Map<String, @Nullable Object> values;
 
     public Environment() {
-        state = new HashMap<>();
+        values = new HashMap<>();
         previous = null;
     }
 
     public Environment(Environment previous) {
-        state = new HashMap<>();
+        values = new HashMap<>();
         this.previous = previous;
     }
 
-    public @Nullable Object getValue(String key) {
-        if (state.containsKey(key)) {
-            return state.get(key);
+    public @Nullable Object getValue(Token name) {
+        if (values.containsKey(name.lexeme)) {
+            return values.get(name.lexeme);
         }
 
-        return null;
+        throw new JloxRuntimeError(name, "Undefined Variable: '" + name.lexeme + "'.");
     }
 
-    public Object put(String key, @Nullable Object value) {
-        return state.put(key, value);
+    public Object define(String key, @Nullable Object value) {
+        return values.put(key, value);
     }
 }

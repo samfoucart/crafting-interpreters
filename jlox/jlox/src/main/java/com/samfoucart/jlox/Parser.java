@@ -30,12 +30,7 @@ public class Parser {
     public List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            try {
-                statements.add(declaration());
-            } catch (ParseError error) {
-                // System.out.println("attempt to synchronize");
-                synchronize();
-            }
+            statements.add(declaration());
         }
 
         return statements;
@@ -84,11 +79,16 @@ public class Parser {
 
     // Recursive Descent - Statements
     private Stmt declaration() {
-        if (match(TokenType.VAR)) {
-            return varDeclaration();
+        try {
+            if (match(TokenType.VAR)) {
+                return varDeclaration();
+            }
+    
+            return statement();
+        } catch (ParseError error) {
+            synchronize();
+            return null;
         }
-
-        return statement();
     }
 
     private Stmt statement() {
