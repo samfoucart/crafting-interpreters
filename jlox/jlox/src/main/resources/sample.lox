@@ -9,4 +9,7 @@ while (hello > 0) {
     } else {
         print "not greater than two";
     }
+    hello = hello - 1;
 }
+
+print "outside of while";

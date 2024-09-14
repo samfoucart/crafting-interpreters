@@ -10,8 +10,10 @@ import com.samfoucart.jlox.Expr.Unary;
 import com.samfoucart.jlox.Expr.Variable;
 import com.samfoucart.jlox.Stmt.Block;
 import com.samfoucart.jlox.Stmt.Expression;
+import com.samfoucart.jlox.Stmt.If;
 import com.samfoucart.jlox.Stmt.Print;
 import com.samfoucart.jlox.Stmt.Var;
+import com.samfoucart.jlox.Stmt.While;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment globalEnvironment = new Environment();
@@ -59,6 +61,29 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Block stmt) {
         executeBlock(stmt.statements, new Environment(globalEnvironment));
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(If stmt) {
+        Object value = evaluate(stmt.condition);
+        if (isTruthy(value)) {
+            execute(stmt.truthy);
+        } else if (!isTruthy(value)) {
+            if (stmt.falsey != null) {
+                execute(stmt.falsey);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(While stmt) {
+        Object value = evaluate(stmt.condition);
+        while (isTruthy(value)) {
+            execute(stmt.loop);
+            value = evaluate(stmt.condition);
+        }
         return null;
     }
 

@@ -108,6 +108,14 @@ public class Parser {
             return printStatement();
         }
 
+        if (match(TokenType.IF)) {
+            return ifStatement();
+        }
+
+        if (match(TokenType.WHILE)) {
+            return whileStatement();
+        }
+
         if (match(TokenType.LEFT_BRACE)) {
             return new Stmt.Block(blockStatement());
         }
@@ -120,6 +128,25 @@ public class Parser {
         Stmt stmt = new Stmt.Print(expr);
         consume(TokenType.SEMICOLON, "Expected ';' after print statement");
         return stmt;
+    }
+
+    private Stmt ifStatement() {
+        Expr expr = expression();
+        Stmt truthy = statement();
+        Stmt falsey = null;
+        if (match(TokenType.ELSE)) {
+            falsey = statement();
+        }
+
+
+        return new Stmt.If(expr, truthy, falsey);
+    }
+
+    private Stmt whileStatement() {
+        Expr expr = expression();
+        Stmt loop = statement();
+
+        return new Stmt.While(expr, loop);
     }
 
     private Stmt expressionStatement() {
